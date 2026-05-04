@@ -16,7 +16,7 @@ metadata:
   # name: এই ডিপ্লয়মেন্টের নাম। GitHub Action-এ আমরা এই নামটিই রিস্টার্ট করার সময় ব্যবহার করি।
   name: recruitment-requisition-deployment
   # namespace: আপনার তৈরি করা ভার্চুয়াল ঘর 'automation'।
-  namespace: automation
+  namespace: auto
 
 # ৪. spec (Specification): এখানে আপনি আপনার অ্যাপটি কেমন হবে তার ডিজাইন করছেন।
 spec:

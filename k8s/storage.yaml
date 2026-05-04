@@ -30,7 +30,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: recruitment-data-pvc # এই নামের মাধ্যমেই আপনার Deployment ফাইলে স্টোরেজ কল করা হবে।
-  namespace: automation      # এটি অবশ্যই আপনার প্রজেক্টের নেমস্পেসের ভেতরে হতে হবে।
+  namespace: auto      # এটি অবশ্যই আপনার প্রজেক্টের নেমস্পেসের ভেতরে হতে হবে।
 spec:
   storageClassName: manual   # PV-র নামের সাথে এটি হুবহু মিলতে হবে (Binding করার জন্য)।
   accessModes:

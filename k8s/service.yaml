@@ -18,7 +18,7 @@ metadata:
   # মাইক্রোসার্ভিস আর্কিটেকচারে অন্য সার্ভিসগুলো এই নাম ব্যবহার করেই একে খুঁজে পাবে।
   name: recruitment-requisition-service
   # namespace: আপনার তৈরি করা ভার্চুয়াল ঘর 'automation'।
-  namespace: automation
+  namespace: auto
 
 # ৪. spec (Specification): এখানে আপনি বলছেন ট্রাফিক কীভাবে আপনার অ্যাপে পৌঁছাবে।
 spec:

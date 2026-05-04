@@ -20,7 +20,7 @@ metadata:
 
   # namespace: এটি অবশ্যই আপনার আগে তৈরি করা 'automation' নেমস্পেসের সাথে মিলতে হবে।
   # নেমস্পেস আলাদা হলে পড এই কনফিগম্যাপটি খুঁজে পাবে না।
-  namespace: automation
+  namespace: auto
 
 # ৪. data: এখানে আপনার আসল কনফিগারেশনগুলো Key-Value আকারে থাকে।
 # আপনার স্প্রিং বুট অ্যাপের application.properties ফাইলে এই ভ্যালুগুলো ইনজেক্ট করা হবে।
