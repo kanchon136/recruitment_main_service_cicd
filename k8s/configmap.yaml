@@ -36,4 +36,4 @@ data:
   EUREKA_URL: "http://localhost:8761/eureka/"
 
   # APP_PORT: আপনার এই নির্দিষ্ট সার্ভিসটি যে পোর্টে রান করবে।
-  APP_PORT: "8005"
+  APP_PORT: "8001"

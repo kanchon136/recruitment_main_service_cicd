@@ -49,12 +49,12 @@ spec:
           # ports: আপনার অ্যাপ্লিকেশনের পোর্ট কনফিগারেশন।
           ports:
             # containerPort: আপনার জাভা অ্যাপটি কন্টেইনারের ভেতরে কোন পোর্টে চলছে।
-            - containerPort: 8005
+            - containerPort: 8001
 
           # env: এনভায়রনমেন্ট ভেরিয়েবল যা আপনার application.properties-এ ডাটা পাঠায়।
           env:
             - name: SERVER_PORT
-              value: "8005"
+              value: "8001"
             - name: FILE_UPLOAD_PATH
               # কন্টেইনারের ভেতরে এই ফোল্ডারে ফাইল সেভ হবে।
               value: "/mnt/recruitment_management_system_file"
