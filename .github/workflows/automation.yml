@@ -1,0 +1,241 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+# ১. name: এটি আপনার পুরো অটোমেশন প্রসেস বা পাইপলাইনের নাম।
+# গিটহাবের 'Actions' ট্যাবে আপনি এই নামেই আপনার কাজগুলো দেখতে পাবেন।
+name: CI/CD for Recruitment Requisition Service
+
+# ২. on: এটি হলো 'ট্রিগার'। অর্থাৎ কখন এই কাজটা শুরু হবে?
+on:
+  # push: মানে হলো যখনই কেউ কোড আপলোড (Push) করবে।
+  push:
+    # branches: এটি একটি ফিল্টার। শুধুমাত্র এই নির্দিষ্ট ব্রাঞ্চে পুশ করলেই অ্যাকশন চলবে।
+    # এটি নিশ্চিত করে যে অন্য কোনো ব্রাঞ্চের (যেমন: test বা develop) কোড ভুল করে প্রোডাকশনে যাবে না।
+    branches: ["recruitment_requisition_service"]
+
+  # workflow_dispatch: এটি আপনাকে গিটহাবে একটি 'Run' বাটন দেয়।
+  # এর ফলে কোড পুশ না করেও আপনি যেকোনো সময় চেক করার জন্য এটি ম্যানুয়ালি চালাতে পারেন।
+  workflow_dispatch:
+
+# ৩. jobs: এখানে আসল কাজের লিস্ট শুরু হয়।
+jobs:
+  # build-and-deploy: এটি কাজের একটি ইউনিক আইডি বা নাম।
+  build-and-deploy:
+    # runs-on: এটি কুবারনেটিস বা গিটহাবের দেওয়া একটি ভার্চুয়াল পিসি (Ubuntu Linux)।
+    # আপনার কোড বিল্ড এবং ডকার ইমেজ বানানোর কাজ এই পিসির ভেতরেই হবে।
+    runs-on: ubuntu-latest
+
+    # ৪. steps: একটি জব এর ভেতরে অনেকগুলো ছোট ছোট ধাপ বা স্টেপ থাকে।
+    steps:
+
+      # ধাপ ১: আপনার গিটহাব একাউন্ট থেকে কোডগুলো এই ভার্চুয়াল পিসিতে ডাউনলোড করা।
+      # 'uses' মানে হলো গিটহাবের তৈরি করা একটি রেডিমমেড প্লাগইন ব্যবহার করা।
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # ধাপ ২: জাভা ইন্সটল করা। আপনার স্প্রিং বুট প্রজেক্ট রান করার জন্য জাভা লাগবে।
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          # java-version: আপনার pom.xml এ যে ভার্সন আছে সেটিই এখানে দিতে হয়।
+          java-version: '17'
+          # distribution: জাভার বিভিন্ন কোম্পানি থাকে, 'temurin' প্রোডাকশনের জন্য খুব জনপ্রিয়।
+          distribution: 'temurin'
+          # cache: এটি বিল্ডের সময় দরকারি লাইব্রেরিগুলো মনে রাখে, ফলে পরের বার বিল্ড দ্রুত হয়।
+          cache: maven
+
+      # ধাপ ৩: আপনার জাভা কোডকে কম্পাইল করে একটি 'JAR' ফাইল তৈরি করা।
+      - name: Build with Maven
+        # clean: আগের সব পুরনো বিল্ড মুছে ফেলা।
+        # package: নতুন করে কোড প্যাক করে JAR ফাইল বানানো।
+        # -DskipTests: বিল্ডের সময় টেস্ট কেসগুলো চালানো বন্ধ রাখা (সময় বাঁচানোর জন্য)।
+        run: mvn clean package -DskipTests
+
+      # ধাপ ৪: ডকার হাবের (Docker Hub) সাথে কানেক্ট হওয়া।
+      # আপনার তৈরি করা ইমেজটি অনলাইনে রাখতে হলে সেখানে আগে লগইন করতে হবে।
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          # secrets: আপনার পাসওয়ার্ড বা ইউজারনেম সরাসরি এখানে লেখা রিস্কি।
+          # তাই গিটহাবের সেটিংসের 'Secrets' অপশন থেকে এই মানগুলো অটোমেটিক চলে আসবে।
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ধাপ ৫: আপনার প্রজেক্টের 'Dockerfile' ব্যবহার করে একটি কন্টেইনার ইমেজ তৈরি করা।
+      - name: Build and Push Docker Image
+        run: |
+          # docker build: এই কমান্ডটি আপনার প্রজেক্টের রুটে থাকা 'Dockerfile' খুঁজে বের করে ইমেজ বানাবে।
+          # -t (tag): এটি আপনার ইমেজের নাম এবং ভার্সন (latest) সেট করে।
+          docker build -t kanchon/recruitment-requisition-service:latest .
+          
+          # docker push: তৈরি করা ইমেজটি ডকার হাবে আপলোড করে দিবে যাতে কুবারনেটিস সেখান থেকে নিতে পারে।
+          docker push kanchon/recruitment-requisition-service:latest
+
+      # ধাপ ৬: কুবারনেটিস (K8s) ক্লাস্টারে আপনার সার্ভিসটি লাইভ বা আপডেট করা।
+      - name: Deploy to Kubernetes
+        run: |
+          # kubectl apply -f: এটি কুবারনেটিসকে কমান্ড দেয় আপনার দেওয়া ফাইলগুলো পড়ার জন্য।
+          
+          # namespace.yaml: আপনার প্রজেক্টের জন্য একটি আলাদা ভার্চুয়াল এরিয়া (ফ্ল্যাট) তৈরি করে।
+          kubectl apply -f k8s/namespace.yaml
+          
+          # configmap.yaml: ডাটাবেস ইউআরএল বা পোর্টের মতো সাধারণ তথ্যগুলো সেভ করে।
+          kubectl apply -f k8s/configmap.yaml
+          
+          # secret.yaml: ডাটাবেস পাসওয়ার্ডের মতো গোপন তথ্যগুলো এনক্রিপ্ট করে রাখে।
+          kubectl apply -f k8s/secret.yaml
+          
+          # storage.yaml: আপনার অ্যাপের জন্য হার্ডড্রাইভে ফিক্সড জায়গা (PV/PVC) বরাদ্দ করে।
+          kubectl apply -f k8s/storage.yaml
+          
+          # deployment.yaml: এটিই আপনার আসল অ্যাপ। এটি ডকার হাব থেকে ইমেজ নামিয়ে পড (Pod) রান করে।
+          kubectl apply -f k8s/deployment.yaml
+          
+          # service.yaml: এটি আপনার অ্যাপের জন্য একটি গেট বা পোর্ট (যেমন: 8005) খুলে দেয়।
+          kubectl apply -f k8s/service.yaml
+          
+          # rollout restart: অনেক সময় আগের পডগুলো চলতে থাকে। এই কমান্ডটি পুরনো পড বন্ধ করে 
+          # নতুন আপলোড করা ইমেজ দিয়ে আপনার অ্যাপটি রিস্টার্ট করে।
+          # -n automation: এটি নিশ্চিত করে যে এই কাজগুলো শুধু 'automation' নামক নেমস্পেসেই হচ্ছে।
+          kubectl rollout restart deployment/recruitment-requisition-deployment -n automation
+
+
+
+#name: Java CI/CD with Maven (Local Self-Hosted)
+#
+#on:
+#  push:
+#    branches: [ "main" ]
+#
+#env:
+#  # Node.js version conflict এড়াতে এটি ব্যবহার করা হয়
+#  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+#
+#jobs:
+#  build-and-deploy:
+#    runs-on: self-hosted
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: maven # এটি বারবার ডিপেন্ডেন্সি ডাউনলোড হওয়া কমাবে
+#
+#      - name: Build with Maven
+#        run: mvn clean package -DskipTests
+#
+#      # ১. ডকার হাবে পুশ করার আগে লগইন করা বাধ্যতামূলক
+#      - name: Login to Docker Hub
+#        run: |
+#          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+#
+#      # ২. ইমেজ বিল্ড এবং পুশ (আপনি আগে শুধু বিল্ড করেছিলেন, এখন পুশও হবে)
+#      - name: Build and Push Docker image
+#        run: |
+#          docker build -t kanchon/automation-cicd:latest .
+#          docker push kanchon/automation-cicd:latest
+#
+#      # ৩. লোকাল কুবারনেটিসে ডিপ্লয়মেন্ট
+#      - name: Deploy to Local Kubernetes
+#        run: |
+#          # কন্টেইনার ইমেজ আপডেট করার জন্য ফাইলগুলো অ্যাপ্লাই করা
+#          kubectl apply -f k8s/namespace.yaml
+#          kubectl apply -f k8s/deployment.yaml
+#          kubectl apply -f k8s/service.yaml
+#
+#          # কুবারনেটিসকে ফোর্স করা যাতে সে ডকার হাব থেকে নতুন ইমেজ নামিয়ে পড রিস্টার্ট দেয়
+#          kubectl rollout restart deployment/automation-cicd-deployment -n automation
+#
+#          # রোলআউট সফল হওয়া পর্যন্ত অপেক্ষা করা
+#          kubectl rollout status deployment/automation-cicd-deployment -n automation
+#
+#      - name: Verify Final Status
+#        run: |
+#          kubectl get pods -n automation
+#          kubectl get svc -n automation
+#          # এন্ডপয়েন্ট চেক করা
+#          kubectl get ep automation-cicd-service -n automation
+          
+
+#name: Java CI with Maven
+#
+#on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+#
+#permissions:
+#  contents: read
+#  id-token: write
+#  actions: read
+#  security-events: write
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      # Optional dependency graph
+#      # - name: Update dependency graph KANCHON
+#      #   uses: advanced-security/maven-dependency-submission-action@v3
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: maven
+#
+#      - name: Build with Maven
+#        run: mvn -B package --file pom.xml
+#
+#      - name: Build & push Docker image
+#        uses: mr-smithers-excellent/docker-build-push@v6
+#        with:
+#          image: kanchon/automation-cicd
+#          tags: latest
+#          registry: docker.io
+#          dockerfile: Dockerfile
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+#
+#      - name: Set up kubectl
+#        uses: azure/setup-kubectl@v3
+#        with:
+#          version: 'v1.27.0'
+#
+#      - name: Set Kubeconfig
+#        run: |
+#          mkdir -p $HOME/.kube
+#          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > $HOME/.kube/config
+#          chmod 600 $HOME/.kube/config
+#
+#      - name: Test Kubernetes Connection
+#        run: |
+#          kubectl cluster-info
+#
+#      - name: Deploy to Kubernetes
+#        run: |
+#          kubectl apply -f k8s/namespace.yaml
+#          kubectl apply -f k8s/deployment.yaml
+#          kubectl apply -f k8s/service.yaml
+
+
+
+

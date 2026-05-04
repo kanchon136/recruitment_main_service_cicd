@@ -1,0 +1,40 @@
+# =============================================================================
+# DEFINITION (সংজ্ঞা):
+# PersistentVolume (PV): এটি আপনার সার্ভারের একটি ফিজিক্যাল স্টোরেজ বা হার্ডডিস্কের অংশ। 
+# এটি কোনো নেমস্পেসের অধীনে থাকে না, এটি পুরো ক্লাস্টারের জন্য একটি গ্লোবাল রিসোর্স।
+# 
+# PersistentVolumeClaim (PVC): এটি হলো পড বা অ্যাপ্লিকেশনের পক্ষ থেকে স্টোরেজ পাওয়ার একটি "আবেদন"। 
+# যখন একটি PVC তৈরি হয়, কুবারনেটিস খুঁজে দেখে কোন PV-র সাথে এর মিল আছে। মিল পেলে তাদের মধ্যে "Binding" হয়।
+# =============================================================================
+
+# ১. PersistentVolume (আসল হার্ডড্রাইভ বা ফোল্ডার সেটআপ)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: recruitment-data-pv # এই PV-র একটি ইউনিক নাম। এটি গ্লোবাল।
+spec:
+  capacity:
+    storage: 5Gi            # আপনি এই PV-র জন্য মোট ৫ জিবি জায়গা বরাদ্দ করছেন।
+  accessModes:
+    - ReadWriteMany        # এটি অত্যন্ত গুরুত্বপূর্ণ। এর মানে হলো অনেকগুলো পড বা কন্টেইনার 
+    # একসাথে এই ফোল্ডারে ফাইল লিখতে এবং পড়তে পারবে।
+  storageClassName: manual  # এটি একটি ট্যাগ। PVC-র সাথে এই PV-কে মেলাতে এটি ব্যবহৃত হয়।
+  hostPath:
+    # আপনার মেইন সার্ভারের (যেখানে কুবারনেটিস চলছে) কোন ফোল্ডারটি অ্যাপ ব্যবহার করবে।
+    path: "/mnt/recruitment_management_system_file"
+
+---
+
+# ২. PersistentVolumeClaim (অ্যাপের পক্ষ থেকে স্টোরেজ দাবি করা)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recruitment-data-pvc # এই নামের মাধ্যমেই আপনার Deployment ফাইলে স্টোরেজ কল করা হবে।
+  namespace: automation      # এটি অবশ্যই আপনার প্রজেক্টের নেমস্পেসের ভেতরে হতে হবে।
+spec:
+  storageClassName: manual   # PV-র নামের সাথে এটি হুবহু মিলতে হবে (Binding করার জন্য)।
+  accessModes:
+    - ReadWriteMany          # PV-তে যে মোড দেওয়া আছে, এখানেও তাই দিতে হবে।
+  resources:
+    requests:
+      storage: 5Gi           # আপনি ৫ জিবি জায়গা ব্যবহারের অনুমতি চাচ্ছেন।

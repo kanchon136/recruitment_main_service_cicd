@@ -1,0 +1,74 @@
+# =============================================================================
+# DEFINITION (সংজ্ঞা):
+# Deployment হলো কুবারনেটিসের একটি কন্ট্রোলার যা আপনার অ্যাপ্লিকেশনের "পড" (Pod) গুলোকে
+# পরিচালনা করে। এটি নিশ্চিত করে যে আপনার অ্যাপটি কয়টি কপি (Replica) চলবে এবং
+# নতুন আপডেট আসলে সেগুলো কীভাবে পডগুলোতে পৌঁছাবে।
+# =============================================================================
+
+# ১. apiVersion: ডকার বা কুবারনেটিসের অ্যাপস এপিআই ভার্সন।
+apiVersion: apps/v1
+
+# ২. kind: অবজেক্ট টাইপ। এখানে 'Deployment' মানে এটি অ্যাপ্লিকেশন চালানোর মূল ফাইল।
+kind: Deployment
+
+# ৩. metadata: এই সেকশনে ডিপ্লয়মেন্টের নিজস্ব পরিচয় থাকে।
+metadata:
+  # name: এই ডিপ্লয়মেন্টের নাম। GitHub Action-এ আমরা এই নামটিই রিস্টার্ট করার সময় ব্যবহার করি।
+  name: recruitment-requisition-deployment
+  # namespace: আপনার তৈরি করা ভার্চুয়াল ঘর 'automation'।
+  namespace: automation
+
+# ৪. spec (Specification): এখানে আপনি আপনার অ্যাপটি কেমন হবে তার ডিজাইন করছেন।
+spec:
+  # replicas: আপনার অ্যাপ্লিকেশনটি একই সাথে কয়টি কপি হয়ে চলবে।
+  # এখানে '2' মানে একটি পড নষ্ট হলেও অন্যটি চালু থাকবে (High Availability)।
+  replicas: 2
+
+  # selector: এটি কুবারনেটিসকে বলে যে কোন পডগুলোকে এই ডিপ্লয়মেন্ট নিয়ন্ত্রণ করবে।
+  selector:
+    matchLabels:
+      app: recruitment-service
+
+  # ৫. template: পড তৈরির নকশা বা ব্লু-প্রিন্ট।
+  template:
+    metadata:
+      labels:
+        # এই লেবেলটি অবশ্যই ওপরের selector-এর সাথে মিলতে হবে।
+        app: recruitment-service
+
+    # ৬. spec (Pod Spec): পডের ভেতরে কন্টেইনার এবং অন্যান্য রিসোর্স সেটআপ।
+    spec:
+      containers:
+        # কন্টেইনারের একটি নাম।
+        - name: recruitment-container
+
+          # image: আপনার ডকার হাবের ইমেজের পাথ।
+          # GitHub Action যখন এই ইমেজে নতুন পুশ দিবে, তখন পড এটি ডাউনলোড করবে।
+          image: kanchon/recruitment-requisition-service:latest
+
+          # ports: আপনার অ্যাপ্লিকেশনের পোর্ট কনফিগারেশন।
+          ports:
+            # containerPort: আপনার জাভা অ্যাপটি কন্টেইনারের ভেতরে কোন পোর্টে চলছে।
+            - containerPort: 8005
+
+          # env: এনভায়রনমেন্ট ভেরিয়েবল যা আপনার application.properties-এ ডাটা পাঠায়।
+          env:
+            - name: SERVER_PORT
+              value: "8005"
+            - name: FILE_UPLOAD_PATH
+              # কন্টেইনারের ভেতরে এই ফোল্ডারে ফাইল সেভ হবে।
+              value: "/mnt/recruitment_management_system_file"
+
+          # volumeMounts: এটি স্টোরেজ বা হার্ডডিস্ককে কন্টেইনারের ভেতরে মাউন্ট করে।
+          volumeMounts:
+            - name: data-storage # নিচের 'volumes' সেকশনের নামের সাথে মিলতে হবে।
+              # mountPath: কন্টেইনারের ভেতরে কোন ডিরেক্টরিতে স্টোরেজটি দেখা যাবে।
+              mountPath: /mnt/recruitment_management_system_file
+
+      # ৭. volumes: এটি বলে দেয় যে স্টোরেজটি আসলে কোথা থেকে আসবে।
+      volumes:
+        - name: data-storage # এটি আপনার কন্টেইনারের ব্যবহারের জন্য একটি নাম।
+          # persistentVolumeClaim: আপনার আগে তৈরি করা PVC (storage.yaml) ব্যবহার করা হচ্ছে।
+          persistentVolumeClaim:
+            # claimName: storage.yaml ফাইলে PVC-র যে নাম দিয়েছিলেন (recruitment-data-pvc)।
+            claimName: recruitment-data-pvc
