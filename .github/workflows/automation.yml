@@ -30,7 +30,7 @@ jobs:
   build-and-deploy:
     # runs-on: এটি কুবারনেটিস বা গিটহাবের দেওয়া একটি ভার্চুয়াল পিসি (Ubuntu Linux)।
     # আপনার কোড বিল্ড এবং ডকার ইমেজ বানানোর কাজ এই পিসির ভেতরেই হবে।
-    runs-on: self-hosted               # ubuntu-latest
+    runs-on: ubuntu-latest             # ubuntu-latest self-hosted
 
     # ৪. steps: একটি জব এর ভেতরে অনেকগুলো ছোট ছোট ধাপ বা স্টেপ থাকে।
     steps:
