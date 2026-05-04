@@ -30,7 +30,7 @@ jobs:
   build-and-deploy:
     # runs-on: এটি কুবারনেটিস বা গিটহাবের দেওয়া একটি ভার্চুয়াল পিসি (Ubuntu Linux)।
     # আপনার কোড বিল্ড এবং ডকার ইমেজ বানানোর কাজ এই পিসির ভেতরেই হবে।
-    runs-on: ubuntu-latest
+    runs-on: self-hosted               # ubuntu-latest
 
     # ৪. steps: একটি জব এর ভেতরে অনেকগুলো ছোট ছোট ধাপ বা স্টেপ থাকে।
     steps:
@@ -104,7 +104,7 @@ jobs:
           # rollout restart: অনেক সময় আগের পডগুলো চলতে থাকে। এই কমান্ডটি পুরনো পড বন্ধ করে 
           # নতুন আপলোড করা ইমেজ দিয়ে আপনার অ্যাপটি রিস্টার্ট করে।
           # -n automation: এটি নিশ্চিত করে যে এই কাজগুলো শুধু 'automation' নামক নেমস্পেসেই হচ্ছে।
-          kubectl rollout restart deployment/recruitment-requisition-deployment -n automation
+          kubectl rollout restart deployment/recruitment-requisition-deployment -n auto
 
 
 
