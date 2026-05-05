@@ -102,6 +102,7 @@
 	<build>
 		<finalName>recruitment-requisition-service</finalName>
 		<plugins>
+			<!-- ১. মেভেন কম্পাইলার প্লাগইন (আপনার অলরেডি আছে) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -114,6 +115,28 @@
 							<version>1.18.30</version>
 						</path>
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+
+			<!-- ২. স্প্রিং বুট মেভেন প্লাগইন (এটিই মিসিং ছিল) -->
+			<!-- এটি সাধারণ JAR-কে এক্সিকিউটেবল JAR-এ রূপান্তর করে -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>
