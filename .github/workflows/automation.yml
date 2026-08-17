@@ -56,7 +56,8 @@ jobs:
         # clean: আগের সব পুরনো বিল্ড মুছে ফেলা।
         # package: নতুন করে কোড প্যাক করে JAR ফাইল বানানো।
         # -DskipTests: বিল্ডের সময় টেস্ট কেসগুলো চালানো বন্ধ রাখা (সময় বাঁচানোর জন্য)।
-        run: mvn clean package -DskipTests
+        #run: mvn clean package -DskipTests
+        run: .\mvnw.cmd clean package -DskipTests
 
       # ধাপ ৪: ডকার হাবের (Docker Hub) সাথে কানেক্ট হওয়া।
       # আপনার তৈরি করা ইমেজটি অনলাইনে রাখতে হলে সেখানে আগে লগইন করতে হবে।
